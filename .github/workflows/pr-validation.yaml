@@ -1,0 +1,60 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install HTMLHint and Stylelint
+        run: |
+          npm install -g htmlhint stylelint
+
+      - name: Lint HTML files
+        run: htmlhint "**/*.html"
+
+      - name: Lint CSS files
+        run: stylelint "**/*.css"
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Install Parcel
+        run: npm install -g parcel-bundler
+
+      - name: Build the project using Parcel
+        run: |
+          parcel build src/index.html --out-dir dist --no-cache
+          
+      - name: Check build success
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Build failed: dist directory does not exist"
+            exit 1
+          fi
+          echo "Build succeeded"
